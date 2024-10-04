@@ -1,0 +1,74 @@
+@PerfCountersApi_HostAddress = http://localhost:22788
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/
+Accept: application/json
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Apps%20v4.0.30319/instances
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/TCPv4/counters
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Apps%20v4.0.30319/counters
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Apps%20v4.0.30319/counters?instanceName=__Total__
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Apps%20v4.0.30319/counters?instanceName=_LM_W3SVC_1_ROOT_async
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Applications/counters/Requests%20Total?instanceName=__Total__
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/TCPv4/counters/Connections%20Established
+
+###
+
+POST {{PerfCountersApi_HostAddress}}/api/perfcounter/counters/values
+Content-Type: application/json
+
+[
+  {
+    "CategoryName": "ASP.NET Applications",
+    "CounterName": "Requests Total",
+    "InstanceName": "__Total__"
+  },
+  {
+    "CategoryName": "TCPv4",
+    "CounterName": "Connections Established"
+  },
+  {
+    "CategoryName": "Processor",
+    "CounterName": "% Processor Time",
+    "InstanceName": "_Total"
+  }
+]
+
+###
+
+POST {{PerfCountersApi_HostAddress}}/api/perfcounter/counters/values/over-time
+Content-Type: application/json
+
+{
+  "CounterRequests": [
+    {
+      "CategoryName": "ASP.NET Applications",
+      "CounterName": "Requests Total",
+      "InstanceName": "__Total__"
+    },
+    {
+      "CategoryName": "TCPv4",
+      "CounterName": "Connections Established"
+    }
+  ],
+  "DurationInSeconds": 5
+}

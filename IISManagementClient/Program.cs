@@ -22,7 +22,7 @@ namespace IISManagementClient
                     // Iterate through each application in the site
                     foreach (Application app in site.Applications)
                     {
-                        Console.WriteLine($"\tApplication Path: {app.Path}");
+                        Console.WriteLine($"\tApplication Path: {app.Path}, PoolName: {app.ApplicationPoolName}, App Counter: _LM_W3SVC_{site.Id}_ROOT{(app.Path.Length > 1 ? "_" + app.Path.Substring(1) : "")}");
 
                         //// Iterate through each virtual directory in the application
                         //foreach (VirtualDirectory vdir in app.VirtualDirectories)

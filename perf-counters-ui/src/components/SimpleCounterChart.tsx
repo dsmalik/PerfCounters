@@ -1,15 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import axios from "axios";
 
-interface CounterChartProps {
-  selectedCategory: string;
-  selectedInstance: string;
-  appendedCounters: string[];
-  filters: string[];
+interface SimpleCounterChartProps {
+  counters: string[];
   isFetching: boolean;
-  graphData: any[];
-  setGraphData: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 interface CounterData {
@@ -18,31 +13,24 @@ interface CounterData {
   value: number;
 }
 
-const CounterChart: React.FC<CounterChartProps> = ({
-  selectedCategory,
-  selectedInstance,
-  appendedCounters,
-  filters,
+const SimpleCounterChart: React.FC<SimpleCounterChartProps> = ({
+  counters,
   isFetching,
-  graphData,
-  setGraphData,
 }) => {
-  console.log("CounterChart Props:", {
-    selectedCategory,
-    selectedInstance,
-    appendedCounters,
-    filters,
+  console.log("SimpleCounterChart Props:", {
+    counters,
     isFetching,
-    graphData,
   });
+
+  const [graphData, setGraphData] = useState<any[]>([]);
 
   const chartRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
-    if (appendedCounters.length === 0 || !isFetching) return;
+    if (counters.length === 0 || !isFetching) return;
 
     const fetchData = async () => {
-      const payload = appendedCounters
+      const payload = counters
         .map((counter) => {
           const regex = /\\(.+?)(?:\((.*?)\))?\\(.+)/;
           const match = counter.match(regex);
@@ -90,19 +78,10 @@ const CounterChart: React.FC<CounterChartProps> = ({
     return () => {
       clearInterval(intervalId);
     };
-  }, [
-    appendedCounters,
-    isFetching,
-    setGraphData,
-    selectedCategory,
-    selectedInstance,
-  ]);
+  }, [counters, isFetching, setGraphData]);
 
   useEffect(() => {
     if (graphData.length === 0) return;
-
-    const filteredData = graphData.filter((d) => filters.includes(d.name));
-    console.log("Filtered data:", filteredData); // Log filtered data
 
     const svg = d3.select(chartRef.current);
     svg.selectAll("*").remove(); // Clear previous content
@@ -113,12 +92,12 @@ const CounterChart: React.FC<CounterChartProps> = ({
 
     const x = d3
       .scaleTime()
-      .domain(d3.extent(filteredData, (d) => d.timestamp) as [Date, Date])
+      .domain(d3.extent(graphData, (d) => d.timestamp) as [Date, Date])
       .range([0, width]);
 
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(filteredData, (d) => d.value) || 0])
+      .domain([0, d3.max(graphData, (d) => d.value) || 0])
       .nice()
       .range([height, 0]);
 
@@ -133,7 +112,7 @@ const CounterChart: React.FC<CounterChartProps> = ({
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const groupedData = d3.group(filteredData, (d) => d.name);
+    const groupedData = d3.group(graphData, (d) => d.name);
 
     groupedData.forEach((values, key) => {
       const sanitizedKey = key.replace(/[^a-zA-Z0-9]/g, "_"); // Sanitize key
@@ -180,13 +159,54 @@ const CounterChart: React.FC<CounterChartProps> = ({
       .attr("y", -50)
       .attr("text-anchor", "middle")
       .text("Value");
-  }, [graphData, filters]);
+
+    // Add legend
+    const legend = svg
+      .append("g")
+      .attr(
+        "transform",
+        `translate(${margin.left},${height + margin.bottom - 20})`
+      );
+
+    let legendIndex = 0;
+    let totalWidth = 1000;
+    let baseOffsetFromTop = 50;
+    const legendItemWidth = 400; // Width of each legend item
+    const svgWidth = totalWidth - margin.left - margin.right; // Available width for legend
+    const itemsPerRow = 2; //Math.floor(svgWidth / legendItemWidth); // Number of items per row
+
+    groupedData.forEach((_, key) => {
+      const sanitizedKey = key.replace(/[^a-zA-Z0-9]/g, "_"); // Sanitize key
+      const xOffset =
+        baseOffsetFromTop + (legendIndex % itemsPerRow) * legendItemWidth; // Adjust x position
+      const yOffset =
+        baseOffsetFromTop + Math.floor(legendIndex / itemsPerRow) * 20; // Adjust y position
+
+      legend
+        .append("rect")
+        .attr("x", xOffset)
+        .attr("y", yOffset)
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("fill", color(sanitizedKey));
+
+      legend
+        .append("text")
+        .attr("x", xOffset + 15)
+        .attr("y", yOffset + 9)
+        .text(key)
+        .style("font-size", "12px")
+        .attr("alignment-baseline", "middle");
+
+      legendIndex++;
+    });
+  }, [graphData]);
 
   return (
     <div>
-      <svg ref={chartRef} width="800" height="400"></svg>
+      <svg ref={chartRef} width="{totalWidth}" height="650"></svg>
     </div>
   );
 };
 
-export default CounterChart;
+export default SimpleCounterChart;

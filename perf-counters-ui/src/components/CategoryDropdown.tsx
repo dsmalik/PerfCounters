@@ -22,7 +22,9 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             category.includes("Web Service") ||
             category.includes("Process") ||
             category.includes(".NET") ||
-            category.includes("TCP")
+            category.includes("TCP") ||
+            category.includes("W3WP") ||
+            category.includes("HTTP")
         )
         .sort();
       setCategories(filteredData);

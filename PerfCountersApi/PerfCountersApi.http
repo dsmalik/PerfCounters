@@ -3,11 +3,34 @@
 GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/
 Accept: application/json
 
+### Get Application Pools
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/app-pools
+
 ###
 
-GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Apps%20v4.0.30319/instances
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/Web%20Service/instances
 
 ###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Applications/instances
+
+### Get category instances for a specific category
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/W3SVC_W3WP/instances
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/.NET%20CLR%20LocksAndThreads/instances
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/.NET%20CLR%20LocksAndThreads/counters?instanceName=w3wp%231__(appa)
+
+###
+
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/.NET%20CLR%20LocksAndThreads/counters/names
+
+##
 
 GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/TCPv4/counters
 
@@ -17,7 +40,7 @@ GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Apps%20
 
 ###
 
-GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Apps%20v4.0.30319/counters?instanceName=__Total__
+GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/ASP.NET%20Apps%20v4.0.30319/counters?instanceName=_LM_W3SVC_1_ROOT_appa
 
 ###
 
@@ -52,6 +75,7 @@ Content-Type: application/json
     "InstanceName": "_Total"
   }
 ]
+[{"CategoryName":"\\Process(Code)\\ID Process"},{"CategoryName":"\\Process(Code)\\Pool Paged Bytes"},{"CategoryName":"\\Process(Code)\\Handle Count"}]
 
 ###
 

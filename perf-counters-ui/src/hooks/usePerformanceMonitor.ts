@@ -22,7 +22,7 @@ export const usePerformanceMonitor = () => {
   };
 
   const handleRetrieveValues = async () => {
-    const payload = appendedCounters
+    const payload = Array.from(appendedCounters)
       .map((counter) => {
         const regex = /\\(.+?)(?:\((.*?)\))?\\(.+)/;
         const match = counter.match(regex);
@@ -73,5 +73,6 @@ export const usePerformanceMonitor = () => {
     resetInstanceAndCounters,
     setCounters,
     setInstances,
+    setSelectedInstance,
   };
 };

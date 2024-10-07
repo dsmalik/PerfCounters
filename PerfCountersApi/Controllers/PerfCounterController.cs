@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using GetCounterInfoByAppPool;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace PerfCountersApi.Controllers
 {
@@ -33,6 +31,22 @@ namespace PerfCountersApi.Controllers
             {
                 var category = new PerformanceCounterCategory(categoryName);
                 var instances = category.GetInstanceNames();
+
+                // Do some special handling for w3wp instances to map them to AppPoolName
+                var appPoolNameByWorkerProcess = AppPoolInfoProvider.GetAppPoolNameByWorkerProcess();
+
+                if (instances.Length > 0 && appPoolNameByWorkerProcess.Count > 0)
+                {
+                    var mappedInstances = new List<string>();
+
+                    foreach (var instance in instances)
+                    {
+                        mappedInstances.Add(instance);
+                    }
+
+                    return Ok(mappedInstances);
+                }
+
                 return Ok(instances);
             }
             catch (Exception ex)
@@ -225,7 +239,74 @@ namespace PerfCountersApi.Controllers
             return Ok(responses);
         }
 
+        // 7. Retrieve list of counter names for a specified performance counter category without requiring instances
+        [HttpGet("categories/{categoryName}/counters/names")]
+        public ActionResult<IEnumerable<string>> GetCounterNamesWithoutInstances(string categoryName)
+        {
+            try
+            {
+                var category = new PerformanceCounterCategory(categoryName);
+                var counterNames = new List<string>();
 
+                if (category.CategoryType == PerformanceCounterCategoryType.MultiInstance)
+                {
+                    var instances = category.GetInstanceNames();
+                    if (instances.Length > 0)
+                    {
+                        var counters = category.GetCounters(instances[0]);
+                        foreach (var counter in counters)
+                        {
+                            counterNames.Add(counter.CounterName);
+                        }
+                    }
+                    else
+                    {
+                        // return BadRequest($"No instances found for multi-instance category '{categoryName}'.");
+                        return Ok(counterNames);
+                    }
+                }
+                else
+                {
+                    var counters = category.GetCounters();
+                    foreach (var counter in counters)
+                    {
+                        counterNames.Add(counter.CounterName);
+                    }
+                }
+
+                return Ok(counterNames);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // 8. Retrieve a list of Application Pools
+        [HttpGet("app-pools")]
+        public ActionResult<IEnumerable<AppPoolInfo>> GetAppPools()
+        {
+            try
+            {
+                var appPoolNameByWorkerProcess = AppPoolInfoProvider.GetAppPoolNameByWorkerProcess();
+                var appPoolInfos = appPoolNameByWorkerProcess.Select(kvp => new AppPoolInfo
+                {
+                    CounterInstanceName = kvp.Key,
+                    AppPoolName = kvp.Value
+                }).ToList();
+
+                return Ok(appPoolInfos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+    }
+    public class AppPoolInfo
+    {
+        public string CounterInstanceName { get; set; }
+        public string AppPoolName { get; set; }
     }
 
     public class CounterValuesOverTimeRequest

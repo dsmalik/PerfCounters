@@ -40,6 +40,11 @@ const CounterList: React.FC<CounterListProps> = ({
     fetchCounters();
   }, [selectedCategory, selectedInstance, setCounters]);
 
+  useEffect(() => {
+    // Clear selected counters when the selected category or instance changes
+    setSelectedCounters([]);
+  }, [selectedCategory, selectedInstance]);
+
   const handleCounterChange = (
     selectedOptions: MultiValue<{ value: string; label: string }>
   ) => {

@@ -21,7 +21,13 @@ const InstanceDropdown: React.FC<InstanceDropdownProps> = ({
     const fetchInstances = async () => {
       if (selectedCategory) {
         const data = await getCategoryInstances(selectedCategory);
-        const sortedData = data.sort();
+        const filteredData = data;
+        // .filter(
+        //   (instance) =>
+        //     instance.toLowerCase().includes("iisexpress") ||
+        //     instance.toLowerCase().includes("w3wp")
+        // );
+        const sortedData = filteredData.sort();
         setInstances(sortedData);
       } else {
         setInstances([]);
@@ -47,7 +53,11 @@ const InstanceDropdown: React.FC<InstanceDropdownProps> = ({
       <Select
         id="instanceSelect"
         options={options}
-        value={options.find((option) => option.value === selectedInstance)}
+        value={
+          selectedInstance
+            ? options.find((option) => option.value === selectedInstance)
+            : null
+        }
         onChange={handleChange}
         isClearable
         placeholder="Select an instance"

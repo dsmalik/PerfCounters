@@ -1,0 +1,18 @@
+.list-group-horizontal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .list-group-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+  
+  .list-group-item input {
+    margin-right: 10px;
+  }

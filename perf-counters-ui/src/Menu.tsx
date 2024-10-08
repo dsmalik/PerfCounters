@@ -21,6 +21,11 @@ const Menu: React.FC = () => {
               </Link>
             </li>
             <li className="nav-item">
+              <Link className="nav-link" to="/aspnet">
+                AspNet Performance Monitor
+              </Link>
+            </li>
+            <li className="nav-item">
               <Link className="nav-link" to="/settings">
                 Settings
               </Link>

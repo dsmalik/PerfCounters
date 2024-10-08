@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IISManagementClient", "IISM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetCounterInfoByAppPool", "GetCounterInfoByAppPool\GetCounterInfoByAppPool.csproj", "{02BE70DA-F929-4D7F-B3CB-BC7A9F778ABA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{92B0761E-3D93-4457-B419-8A4E4B06A114}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,12 +31,17 @@ Global
 		{02BE70DA-F929-4D7F-B3CB-BC7A9F778ABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02BE70DA-F929-4D7F-B3CB-BC7A9F778ABA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02BE70DA-F929-4D7F-B3CB-BC7A9F778ABA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92B0761E-3D93-4457-B419-8A4E4B06A114}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92B0761E-3D93-4457-B419-8A4E4B06A114}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92B0761E-3D93-4457-B419-8A4E4B06A114}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92B0761E-3D93-4457-B419-8A4E4B06A114}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{50B8CD23-5E8E-455A-A352-5DF6DA9B3D10} = {BC78DA50-F19A-4A57-9C05-8BEFBEC8AAED}
+		{92B0761E-3D93-4457-B419-8A4E4B06A114} = {BC78DA50-F19A-4A57-9C05-8BEFBEC8AAED}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4D781B0C-C3F9-42A4-8570-D6CC05DD5DA7}

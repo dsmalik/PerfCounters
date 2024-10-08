@@ -23,8 +23,8 @@ const SimpleCounterChart: React.FC<SimpleCounterChartProps> = ({
   });
 
   const [graphData, setGraphData] = useState<any[]>([]);
-
   const chartRef = useRef<SVGSVGElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (counters.length === 0 || !isFetching) return;
@@ -86,8 +86,9 @@ const SimpleCounterChart: React.FC<SimpleCounterChartProps> = ({
     const svg = d3.select(chartRef.current);
     svg.selectAll("*").remove(); // Clear previous content
 
+    const containerWidth = containerRef.current?.offsetWidth || 800;
     const margin = { top: 20, right: 30, bottom: 60, left: 60 };
-    const width = 800 - margin.left - margin.right;
+    const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
     const x = d3
@@ -169,11 +170,11 @@ const SimpleCounterChart: React.FC<SimpleCounterChartProps> = ({
       );
 
     let legendIndex = 0;
-    let totalWidth = 1000;
+    let totalWidth = containerWidth;
     let baseOffsetFromTop = 50;
-    const legendItemWidth = 400; // Width of each legend item
+    const legendItemWidth = containerWidth / 2; // Width of each legend item
     const svgWidth = totalWidth - margin.left - margin.right; // Available width for legend
-    const itemsPerRow = 2; //Math.floor(svgWidth / legendItemWidth); // Number of items per row
+    const itemsPerRow = containerWidth > 700 ? 2 : 1; //Math.floor(svgWidth / legendItemWidth); // Number of items per row
 
     groupedData.forEach((_, key) => {
       const sanitizedKey = key.replace(/[^a-zA-Z0-9]/g, "_"); // Sanitize key
@@ -203,8 +204,8 @@ const SimpleCounterChart: React.FC<SimpleCounterChartProps> = ({
   }, [graphData]);
 
   return (
-    <div>
-      <svg ref={chartRef} width="{totalWidth}" height="650"></svg>
+    <div ref={containerRef} style={{ width: "100%" }}>
+      <svg ref={chartRef} width="100%" height="650"></svg>
     </div>
   );
 };

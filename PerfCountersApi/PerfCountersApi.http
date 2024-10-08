@@ -1,5 +1,11 @@
 @PerfCountersApi_HostAddress = http://localhost:22788
 
+### Get IIS Applications
+GET {{PerfCountersApi_HostAddress}}/api/aspnetapps/iis-apps
+
+### Other requests...
+
+
 GET {{PerfCountersApi_HostAddress}}/api/perfcounter/categories/
 Accept: application/json
 

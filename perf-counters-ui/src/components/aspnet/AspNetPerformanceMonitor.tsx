@@ -8,6 +8,7 @@ interface AspNetAppInfo {
   siteName: string;
   appPoolName: string;
   appPath: string;
+  processName: string;
 }
 
 interface ChartConfig {
@@ -30,7 +31,7 @@ const AspNetPerformanceMonitor = () => {
   }>({});
 
   useEffect(() => {
-    fetch("http://localhost:22788/api/aspnetapps/iis-apps")
+    fetch("http://localhost:56139/api/aspnetapps/aspnet-apps")
       .then((response) => response.json())
       .then((data: Array<AspNetAppInfo>) => {
         const formattedData = data.map((app) => {
@@ -38,7 +39,7 @@ const AspNetPerformanceMonitor = () => {
           var parsedAppPathValue =
             app.appPath === "" ? "ROOT" : "ROOT_" + app.appPath;
           return {
-            label: `Site: ${app.siteName} App: ${parsedAppPath}`,
+            label: `Site: ${app.siteName}_${app.processName} App: ${parsedAppPath}`,
             value: `_LM_W3SVC_${app.siteId}_${parsedAppPathValue}`,
           };
         });
@@ -105,7 +106,7 @@ const AspNetPerformanceMonitor = () => {
       <div className="d-flex align-items-center">
         <div
           className="form-group"
-          style={{ width: "30%", marginRight: "10px" }}
+          style={{ width: "40%", marginRight: "10px" }}
         >
           <Select
             options={apps}

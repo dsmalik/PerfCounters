@@ -19,7 +19,7 @@ const IISPerformanceMonitor: React.FC = () => {
     const fetchAppPools = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:22788/api/perfcounter/app-pools"
+          "http://localhost:56139/api/perfcounter/app-pools"
         );
         const appPoolsData = response.data.map(
           (appPool: { counterInstanceName: string; appPoolName: string }) => ({

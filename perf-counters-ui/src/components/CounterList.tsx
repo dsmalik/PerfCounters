@@ -24,7 +24,7 @@ const CounterList: React.FC<CounterListProps> = ({
   useEffect(() => {
     const fetchCounters = async () => {
       if (selectedCategory && (selectedInstance || selectedInstance === "")) {
-        let url = `http://localhost:22788/api/perfcounter/categories/${encodeURIComponent(
+        let url = `http://localhost:56139/api/perfcounter/categories/${encodeURIComponent(
           selectedCategory
         )}/counters`;
         if (selectedInstance) {

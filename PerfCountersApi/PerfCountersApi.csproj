@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GetCounterInfoByAppPool\GetCounterInfoByAppPool.csproj" />
+    <ProjectReference Include="..\PerfLib.Common\PerfLib.Common.csproj" />
   </ItemGroup>
 
 </Project>

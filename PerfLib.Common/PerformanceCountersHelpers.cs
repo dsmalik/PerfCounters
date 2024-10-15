@@ -1,70 +1,18 @@
-﻿using GetCounterInfoByAppPool;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Web.Administration;
-using PerfLib.Common;
-using PerfLib.Common.Models;
+﻿using PerfLib.Common.Models;
+using PerfLib.Common.Services;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Management;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace PerfCountersApi.Controllers
+namespace PerfLib.Common
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AspNetAppsController : ControllerBase
+    public class PerformanceCountersHelpers
     {
-        // Endpoint to retrieve information about applications hosted in IIS
-        [HttpGet("iis-apps")]
-        public ActionResult<IEnumerable<IisAppInfo>> GetIisApps([FromQuery] string path = @"C:\Windows\System32\inetsrv\config\applicationHost.config")
-        {
-            try
-            {
-                // Path to the applicationHost.config file for full IIS
-                string applicationHostConfigPath = path;
-                var serverManager = new ServerManager(applicationHostConfigPath);
-                var iisApps = new List<IisAppInfo>();
-
-                foreach (var site in serverManager.Sites)
-                {
-                    foreach (var app in site.Applications)
-                    {
-                        iisApps.Add(new IisAppInfo
-                        {
-                            SiteId = site.Id,
-                            SiteName = site.Name,
-                            AppPoolName = app.ApplicationPoolName,
-                            AppPath = app.Path.TrimEnd('/').Replace("/", "")
-                        });
-                    }
-                }
-
-                return Ok(iisApps);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("performance-counters")]
-        public ActionResult<IEnumerable<CounterValueResponse>> GetPerformanceCounters([FromBody] CounterRequest counterRequest)
-        {
-            try
-            {
-                // Get the sites hosted in IIS
-
-                // Get the sites hosted in Running IISExpress instances
-
-                List<CounterValueResponse> responses = GetCountersForApplication(counterRequest);
-
-                return Ok(responses);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         private List<CounterValueResponse> GetCountersForApplication(CounterRequest counterRequest)
         {
             var appInfo = counterRequest.AppInfo;
@@ -124,28 +72,6 @@ namespace PerfCountersApi.Controllers
             return responses;
         }
 
-        [HttpPost("aspnet-counters")]
-        public ActionResult<IEnumerable<CounterValueResponse>> GetAllAspNetPerformanceCounters([FromBody] List<CounterRequestData> counters)
-        {
-            try
-            {
-                // Get the list of applications for all iisexpress processes
-                var iisexpresses = PerformanceCountersHelpers.GetProcessInfoForIisExpress();
-
-                var paths = iisexpresses.Values;
-
-
-                // Get the list of applications using the default iis config
-
-                var responses = new List<CounterValueResponse>();
-
-                return Ok(responses);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
 
         private string GetInstanceNameFor(CounterRequestData item, string instanceName, int getProcessId)
         {
@@ -195,6 +121,38 @@ namespace PerfCountersApi.Controllers
 
             return "w3wp";
         }
-    }
 
+        public static Dictionary<(int, string), string> GetProcessInfoForIisExpress()
+        {
+            var processCommandLines = new Dictionary<(int, string), string>();
+
+            var searcher = new ManagementObjectSearcher("SELECT ProcessId, Name, CommandLine FROM Win32_Process");
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                var processId = Convert.ToInt32(obj["ProcessId"]);
+                var processName = obj["Name"].ToString();
+                var commandLine = obj["CommandLine"]?.ToString() ?? string.Empty;
+
+                if (processName.Equals("iisexpress.exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    processCommandLines[(processId, processName)] = GetConfigPath(commandLine);
+                }
+            }
+
+            return processCommandLines;
+        }
+
+        private static string GetConfigPath(string commandLine)
+        {
+            var configStringToMatch = @"/config:";
+            var configPathRaw = commandLine.Split(' ').Where(x => x.StartsWith(configStringToMatch)).FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(configPathRaw))
+            {
+                return new FileInfo(configPathRaw.Substring(configStringToMatch.Length + 1, configPathRaw.Length - configStringToMatch.Length - 2)).FullName;
+            }
+
+            return "";
+        }
+    }
 }

@@ -1,7 +1,9 @@
 ﻿using Microsoft.Web.Administration;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Management;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +13,14 @@ namespace IISManagementClient
     {
         static void Main(string[] args)
         {
+            var processInfo = GetProcessCommandLines();
+            foreach (var entry in processInfo)
+            {
+                Console.WriteLine($"Process ID: {entry.Key.Item1}, Process Name: {entry.Key.Item2}, Command Line: {entry.Value}");
+            }
+
+            Console.WriteLine(); Console.WriteLine();
+
             // Create an instance of ServerManager to manage IIS
             using (ServerManager serverManager = new ServerManager())
             {
@@ -34,6 +44,39 @@ namespace IISManagementClient
                     Console.WriteLine();
                 }
             }
+        }
+
+        private static Dictionary<(int, string), string> GetProcessCommandLines()
+        {
+            var processCommandLines = new Dictionary<(int, string), string>();
+
+            var searcher = new ManagementObjectSearcher("SELECT ProcessId, Name, CommandLine FROM Win32_Process");
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                var processId = Convert.ToInt32(obj["ProcessId"]);
+                var processName = obj["Name"].ToString();
+                var commandLine = obj["CommandLine"]?.ToString() ?? string.Empty;
+
+                if (processName.Equals("iisexpress.exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    processCommandLines[(processId, processName)] = GetConfigPath(commandLine);
+                }
+            }
+
+            return processCommandLines;
+        }
+
+        private static string GetConfigPath(string commandLine)
+        {
+            var configStringToMatch = @"/config:";
+            var configPathRaw = commandLine.Split(' ').Where(x => x.StartsWith(configStringToMatch)).FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(configPathRaw))
+            {
+                return new FileInfo(configPathRaw.Substring(configStringToMatch.Length + 1, configPathRaw.Length - configStringToMatch.Length - 2)).FullName;
+            }
+
+            return "";
         }
     }
 }

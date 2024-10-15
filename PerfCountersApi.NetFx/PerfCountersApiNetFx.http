@@ -1,7 +1,11 @@
-@PerfCountersApi_HostAddress = http://localhost:22788
+@PerfCountersApi_HostAddress = http://localhost:56139
 
 ### Get IIS Applications
 GET {{PerfCountersApi_HostAddress}}/api/aspnetapps/iis-apps
+
+### Get All ASP.NET Applications
+
+GET {{PerfCountersApi_HostAddress}}/api/aspnetapps/aspnet-apps
 
 ### Get IIS Applications from Path
 GET {{PerfCountersApi_HostAddress}}/api/aspnetapps/iis-apps?path=C:\Users\Dinesh\source\repos\PerformanceMonitoring\.vs\PerformanceMonitoring\config\applicationhost.config
@@ -32,10 +36,10 @@ POST {{PerfCountersApi_HostAddress}}/api/aspnetapps/aspnet-counters
 Content-Type: application/json
 
 [
-        {
-            "SelectedCategory": "ASP.NET Applications",
-            "SelectedCounters": ["Requests Total", "Requests/Sec", "Requests Executing"]
-        }
+    {
+        "SelectedCategory": "ASP.NET Applications",
+        "SelectedCounters": ["Requests Total", "Requests/Sec", "Requests Executing"]
+    }
 ]
 
 ###

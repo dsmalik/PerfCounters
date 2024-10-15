@@ -1,21 +1,29 @@
-﻿using GetCounterInfoByAppPool;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Web.Administration;
+﻿using Microsoft.Web.Administration;
 using PerfLib.Common;
 using PerfLib.Common.Models;
+using PerfLib.Common.Services;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Diagnostics.PerformanceData;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Policy;
+using System.Web.Http;
+using System.Web.Http.Cors;
 
-namespace PerfCountersApi.Controllers
+namespace PerfCountersApi.NetFx.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AspNetAppsController : ControllerBase
+    [EnableCors("*", "*", "*")]
+    public class AspNetAppsController : ApiController
     {
         // Endpoint to retrieve information about applications hosted in IIS
-        [HttpGet("iis-apps")]
-        public ActionResult<IEnumerable<IisAppInfo>> GetIisApps([FromQuery] string path = @"C:\Windows\System32\inetsrv\config\applicationHost.config")
+        [HttpGet]
+        [Route("api/aspnetapps/iis-apps")]
+        // IEnumerable<IisAppInfo>
+        public IHttpActionResult GetIisApps([FromUri] string path = @"C:\Windows\System32\inetsrv\config\applicationHost.config")
         {
             try
             {
@@ -33,7 +41,8 @@ namespace PerfCountersApi.Controllers
                             SiteId = site.Id,
                             SiteName = site.Name,
                             AppPoolName = app.ApplicationPoolName,
-                            AppPath = app.Path.TrimEnd('/').Replace("/", "")
+                            AppPath = app.Path.TrimEnd('/').Replace("/", ""),
+                            ProcessName = "w3wp"
                         });
                     }
                 }
@@ -46,15 +55,37 @@ namespace PerfCountersApi.Controllers
             }
         }
 
-        [HttpPost("performance-counters")]
-        public ActionResult<IEnumerable<CounterValueResponse>> GetPerformanceCounters([FromBody] CounterRequest counterRequest)
+        [HttpGet]
+        [Route("api/aspnetapps/aspnet-apps")]
+        // IEnumerable<IisAppInfo>
+        public IHttpActionResult GetAllAspNetApps()
         {
             try
             {
-                // Get the sites hosted in IIS
+                var responses = new List<IisAppInfo>();
+                var iisExpressSites = SiteInfoService.GetIisExpressSites();
 
-                // Get the sites hosted in Running IISExpress instances
+                responses.AddRange(iisExpressSites);
 
+
+                var w3wpSites = SiteInfoService.GetIisSites();
+                responses.AddRange(w3wpSites);
+
+                return Ok(responses);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("api/aspnetapps/performance-counters")]
+        // IEnumerable<CounterValueResponse>
+        public IHttpActionResult GetPerformanceCounters([FromBody] CounterRequest counterRequest)
+        {
+            try
+            {
                 List<CounterValueResponse> responses = GetCountersForApplication(counterRequest);
 
                 return Ok(responses);
@@ -68,8 +99,8 @@ namespace PerfCountersApi.Controllers
         private List<CounterValueResponse> GetCountersForApplication(CounterRequest counterRequest)
         {
             var appInfo = counterRequest.AppInfo;
-
-            string instanceName = $"_LM_W3SVC_{appInfo.SiteId}_ROOT{(appInfo.AppPath.Length > 1 ? "_" + appInfo.AppPath.Substring(1) : "")}";
+            var appName = appInfo.AppPath.Length > 1 ? "_" + appInfo.AppPath.Substring(1) : "";
+            string instanceName = $"_LM_W3SVC_{appInfo.SiteId}_ROOT{appName}";
 
             var getProcessId = AppPoolInfoProvider.GetProcessIdByAppPoolName().Where(x => x.Key == appInfo.AppPoolName).Select(x => x.Value).FirstOrDefault();
 
@@ -105,7 +136,8 @@ namespace PerfCountersApi.Controllers
                         CategoryName = request.CategoryName,
                         CounterName = request.CounterName,
                         InstanceName = request.InstanceName,
-                        Value = value
+                        Value = value,
+                        SiteName = $"{counterRequest.AppInfo.ProcessName}_{counterRequest.AppInfo.ProcessName}{(appName.Length > 1 ? $"{appName}" : "")}"
                     });
                 }
                 catch (Exception ex)
@@ -116,7 +148,8 @@ namespace PerfCountersApi.Controllers
                         CounterName = request.CounterName,
                         InstanceName = request.InstanceName,
                         ErrorMessage = ex.Message,
-                        Value = 0
+                        Value = 0,
+                        SiteName = $"{counterRequest.AppInfo.ProcessName}_{counterRequest.AppInfo.SiteName}{(appName.Length > 1 ? $"{appName}" : "")}"
                     });
                 }
             }
@@ -124,20 +157,43 @@ namespace PerfCountersApi.Controllers
             return responses;
         }
 
-        [HttpPost("aspnet-counters")]
-        public ActionResult<IEnumerable<CounterValueResponse>> GetAllAspNetPerformanceCounters([FromBody] List<CounterRequestData> counters)
+        [HttpPost]
+        [Route("api/aspnetapps/aspnet-counters")]
+        public IHttpActionResult GetAllAspNetPerformanceCounters([FromBody] List<CounterRequestData> counters)
         {
             try
             {
-                // Get the list of applications for all iisexpress processes
-                var iisexpresses = PerformanceCountersHelpers.GetProcessInfoForIisExpress();
-
-                var paths = iisexpresses.Values;
-
-
-                // Get the list of applications using the default iis config
-
                 var responses = new List<CounterValueResponse>();
+
+                var iisExpressSites = SiteInfoService.GetIisExpressSites();
+
+                foreach (var site in iisExpressSites)
+                {
+                    // Make the CounterRequest here and then populate the Complete response to return
+                    var counterRequest = new CounterRequest
+                    {
+                        AppInfo = site,
+                        Counters = counters
+                    };
+
+                    responses.AddRange(GetCountersForApplication(counterRequest));
+                }
+
+                var w3wpSites = SiteInfoService.GetIisSites();
+
+                foreach (var site in w3wpSites)
+                {
+                    // Make the CounterRequest here and then populate the Complete response to return
+                    var counterRequest = new CounterRequest
+                    {
+                        AppInfo = site,
+                        Counters = counters
+                    };
+
+                    responses.AddRange(GetCountersForApplication(counterRequest));
+                }
+
+
 
                 return Ok(responses);
             }
@@ -196,5 +252,4 @@ namespace PerfCountersApi.Controllers
             return "w3wp";
         }
     }
-
 }

@@ -45,7 +45,7 @@ const Settings: React.FC = () => {
     if (category) {
       try {
         const response = await axios.get(
-          `http://localhost:22788/api/perfcounter/categories/${category}/counters/names`
+          `http://localhost:56139/api/perfcounter/categories/${category}/counters/names`
         );
         setCounters(response.data);
         setErrorMessage(null); // Clear the error message when a category is selected

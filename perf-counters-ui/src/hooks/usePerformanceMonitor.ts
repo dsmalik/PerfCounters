@@ -39,7 +39,7 @@ export const usePerformanceMonitor = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:22788/api/perfcounter/counters/values",
+        "http://localhost:56139/api/perfcounter/counters/values",
         payload,
         {
           headers: {

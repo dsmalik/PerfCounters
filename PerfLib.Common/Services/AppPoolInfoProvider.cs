@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace GetCounterInfoByAppPool
+namespace PerfLib.Common.Services
 {
     public class AppPoolInfoProvider
     {

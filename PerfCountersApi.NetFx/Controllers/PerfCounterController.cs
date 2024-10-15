@@ -1,17 +1,26 @@
-﻿using GetCounterInfoByAppPool;
-using Microsoft.AspNetCore.Mvc;
-using PerfLib.Common.Models;
+﻿using PerfLib.Common.Models;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Web.Http;
+using PerfLib.Common.Services;
+using System.Web.Http.Cors;
 
-namespace PerfCountersApi.Controllers
+namespace PerfCountersApi.NetFx.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class PerfCounterController : ControllerBase
+    [EnableCors("*", "*", "*")]
+    public class PerfCounterController : ApiController
     {
         // 1. Retrieve a list of all Performance Counter Categories
-        [HttpGet("categories")]
-        public ActionResult<IEnumerable<string>> GetAllCategories()
+        [HttpGet]
+        [Route("api/perfcounter/categories")]
+        // ActionResult<IEnumerable<string>>
+        public IHttpActionResult GetAllCategories()
         {
             var categories = PerformanceCounterCategory.GetCategories();
             var categoryNames = new List<string>();
@@ -25,8 +34,10 @@ namespace PerfCountersApi.Controllers
         }
 
         // 2. Retrieve list of instances for a specified performance counter category
-        [HttpGet("categories/{categoryName}/instances")]
-        public ActionResult<IEnumerable<string>> GetInstances(string categoryName)
+        [HttpGet]
+        [Route("api/perfcounter/categories/{categoryName}/instances")]
+        // ActionResult<IEnumerable<string>>
+        public IHttpActionResult GetInstances(string categoryName)
         {
             try
             {
@@ -57,8 +68,10 @@ namespace PerfCountersApi.Controllers
         }
 
         // 3. Retrieve list of counter names based on the specified counter category
-        [HttpGet("categories/{categoryName}/counters")]
-        public ActionResult<IEnumerable<string>> GetCounters(string categoryName, [FromQuery] string instanceName = null)
+        [HttpGet]
+        [Route("api/perfcounter/categories/{categoryName}/counters")]
+        // ActionResult<IEnumerable<string>>
+        public IHttpActionResult GetCounters(string categoryName, [FromUri] string instanceName = null)
         {
             try
             {
@@ -115,8 +128,9 @@ namespace PerfCountersApi.Controllers
         }
 
         // 4. Retrieve the value of a specific counter for a specific instance
-        [HttpGet("categories/{categoryName}/counters/{counterName}")]
-        public ActionResult<float> GetCounterValue(string categoryName, string counterName, [FromQuery] string instanceName = null)
+        [HttpGet]
+        [Route("api/perfcounter/categories/{categoryName}/counters/{counterName}")]
+        public IHttpActionResult GetCounterValue(string categoryName, string counterName, [FromUri] string instanceName = null)
         {
             try
             {
@@ -141,8 +155,10 @@ namespace PerfCountersApi.Controllers
         }
 
         // 5. Retrieve values for multiple counters in a single request
-        [HttpPost("counters/values")]
-        public ActionResult<IEnumerable<CounterValueResponse>> GetMultipleCounterValues([FromBody] IEnumerable<CounterValueRequest> requests)
+        [HttpPost]
+        [Route("api/perfcounter/counters/values")]
+        // ActionResult<IEnumerable<CounterValueResponse>>
+        public IHttpActionResult GetMultipleCounterValues([FromBody] IEnumerable<CounterValueRequest> requests)
         {
             var responses = new List<CounterValueResponse>();
 
@@ -186,8 +202,10 @@ namespace PerfCountersApi.Controllers
         }
 
         // 6. Retrieve a list of values for multiple counters over a period of time
-        [HttpPost("counters/values/over-time")]
-        public async Task<ActionResult<IEnumerable<CounterValuesOverTimeResponse>>> GetCounterValuesOverTime([FromBody] CounterValuesOverTimeRequest request, CancellationToken cancellationToken)
+        [HttpPost]
+        [Route("api/perfcounter/counters/values/over-time")]
+        // Task<ActionResult<IEnumerable<CounterValuesOverTimeResponse>>>
+        public async Task<IHttpActionResult> GetCounterValuesOverTime([FromBody] CounterValuesOverTimeRequest request, CancellationToken cancellationToken)
         {
             var responses = new List<CounterValuesOverTimeResponse>();
 
@@ -241,8 +259,10 @@ namespace PerfCountersApi.Controllers
         }
 
         // 7. Retrieve list of counter names for a specified performance counter category without requiring instances
-        [HttpGet("categories/{categoryName}/counters/names")]
-        public ActionResult<IEnumerable<string>> GetCounterNamesWithoutInstances(string categoryName)
+        [HttpGet]
+        [Route("api/perfcounter/categories/{categoryName}/counters/names")]
+        // ActionResult<IEnumerable<string>>
+        public IHttpActionResult GetCounterNamesWithoutInstances(string categoryName)
         {
             try
             {
@@ -284,8 +304,10 @@ namespace PerfCountersApi.Controllers
         }
 
         // 8. Retrieve a list of Application Pools
-        [HttpGet("app-pools")]
-        public ActionResult<IEnumerable<AppPoolInfo>> GetAppPools()
+        [HttpGet]
+        [Route("api/perfcounter/app-pools")]
+        //  IEnumerable<AppPoolInfo> 
+        public IHttpActionResult GetAppPools()
         {
             try
             {
@@ -304,5 +326,4 @@ namespace PerfCountersApi.Controllers
             }
         }
     }
-    
 }

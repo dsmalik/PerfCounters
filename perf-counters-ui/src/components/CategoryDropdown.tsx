@@ -17,14 +17,13 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
       const data = await getPerformanceCategories();
       const filteredData = data
         .filter(
-          (category) =>
-            category.includes("ASP.NET") ||
-            category.includes("Web Service") ||
-            category.includes("Process") ||
-            category.includes(".NET") ||
-            category.includes("TCP") ||
-            category.includes("W3WP") ||
-            category.includes("HTTP")
+          (category) => category.includes("ASP.NET") //||
+          // category.includes("Web Service") ||
+          // category.includes("Process") ||
+          // category.includes(".NET") ||
+          // category.includes("TCP") ||
+          // category.includes("W3WP") ||
+          // category.includes("HTTP")
         )
         .sort();
       setCategories(filteredData);
